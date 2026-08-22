@@ -5,6 +5,7 @@
       "name": "Run MAUI Command Deck Extension",
       "type": "extensionHost",
       "request": "launch",
+      "preLaunchTask": "npm: compile",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"]
     }
   ]

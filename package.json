@@ -22,7 +22,7 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "main": "./extension.js",
+  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       { "command": "mauiWorkbench.selectProject", "title": "MAUI: Select Startup Project", "icon": "$(project)" },
@@ -66,6 +66,14 @@
     }
   },
   "scripts": {
-    "check": "node --check extension.js"
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "check": "tsc -p ./ --noEmit",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.95.0",
+    "typescript": "^5.7.0"
   }
 }

@@ -1,4 +1,10 @@
 .git/**
+.gitignore
 .vscode/**
 graphify-out/**
 *.vsix
+src/**
+tsconfig.json
+**/*.map
+node_modules/**
+package-lock.json
