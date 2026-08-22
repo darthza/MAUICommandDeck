@@ -1,0 +1,71 @@
+{
+  "name": "maui-command-deck",
+  "displayName": "MAUI Command Deck",
+  "description": "Persistent Visual Studio-style project, target, device, and run controls for .NET MAUI.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/darthza/MAUICommandDeck.git"
+  },
+  "homepage": "https://github.com/darthza/MAUICommandDeck#readme",
+  "bugs": {
+    "url": "https://github.com/darthza/MAUICommandDeck/issues"
+  },
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "mauiWorkbench.selectProject", "title": "MAUI: Select Startup Project", "icon": "$(project)" },
+      { "command": "mauiWorkbench.selectPlatform", "title": "MAUI: Select Target Platform", "icon": "$(device-mobile)" },
+      { "command": "mauiWorkbench.selectDevice", "title": "MAUI: Select Device", "icon": "$(server-environment)" },
+      { "command": "mauiWorkbench.selectConfiguration", "title": "MAUI: Select Build Configuration", "icon": "$(settings-gear)" },
+      { "command": "mauiWorkbench.build", "title": "MAUI: Build Selected Project", "icon": "$(tools)" },
+      { "command": "mauiWorkbench.run", "title": "MAUI: Run Selected Project", "icon": "$(play)" },
+      { "command": "mauiWorkbench.debug", "title": "MAUI: Debug Selected Project", "icon": "$(debug-alt)" },
+      { "command": "mauiWorkbench.stop", "title": "MAUI: Stop", "icon": "$(debug-stop)" },
+      { "command": "mauiWorkbench.clean", "title": "MAUI: Clean Selected Project", "icon": "$(trash)" },
+      { "command": "mauiWorkbench.refresh", "title": "MAUI: Refresh Projects and Devices", "icon": "$(refresh)" }
+    ],
+    "menus": {
+      "editor/title": [
+        { "command": "mauiWorkbench.build", "group": "navigation@80", "when": "mauiWorkbench.hasProject && config.mauiWorkbench.showEditorActions" },
+        { "command": "mauiWorkbench.run", "group": "navigation@81", "when": "mauiWorkbench.hasProject && config.mauiWorkbench.showEditorActions" },
+        { "command": "mauiWorkbench.debug", "group": "navigation@82", "when": "mauiWorkbench.hasProject && config.mauiWorkbench.showEditorActions" },
+        { "command": "mauiWorkbench.stop", "group": "navigation@83", "when": "(inDebugMode || mauiWorkbench.taskRunning) && config.mauiWorkbench.showEditorActions" }
+      ]
+    },
+    "keybindings": [
+      { "command": "mauiWorkbench.run", "key": "ctrl+f5", "mac": "cmd+f5", "when": "mauiWorkbench.hasProject" },
+      { "command": "mauiWorkbench.debug", "key": "f5", "when": "mauiWorkbench.hasProject" },
+      { "command": "mauiWorkbench.stop", "key": "shift+f5", "when": "inDebugMode || mauiWorkbench.taskRunning" }
+    ],
+    "configuration": {
+      "title": "MAUI Command Deck",
+      "properties": {
+        "mauiWorkbench.dotnetPath": {
+          "type": "string",
+          "default": "dotnet",
+          "description": "Path to the dotnet executable."
+        },
+        "mauiWorkbench.showEditorActions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Build, Run, Debug, and Stop in editor title toolbars. Reload the window after changing this option."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "check": "node --check extension.js"
+  }
+}

@@ -1,0 +1,4 @@
+.git/**
+.vscode/**
+graphify-out/**
+*.vsix
