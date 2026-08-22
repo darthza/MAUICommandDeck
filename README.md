@@ -26,6 +26,8 @@ Build, Run, Debug, and Stop actions also appear at the top-right of editor group
 4. Press `F5` to launch an Extension Development Host.
 5. In the new window, open a folder containing one or more MAUI projects.
 
+Run `npm test` to compile and execute the unit tests for project discovery, target selection, device parsing, and CLI arguments.
+
 Workspace selections are remembered independently for every VS Code workspace.
 
 ## Current limitations

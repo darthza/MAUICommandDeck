@@ -3,10 +3,18 @@ import { execFile as execFileCallback } from 'child_process';
 import * as path from 'path';
 import { promises as fs } from 'fs';
 import { promisify } from 'util';
+import {
+  dotnetArguments,
+  frameworkForPlatform,
+  isMauiProject,
+  parseAdbDevices,
+  parseSimctlDevices,
+  targetFrameworks,
+  type DeviceTarget,
+  type Platform
+} from './core';
 
 const execFile = promisify(execFileCallback);
-
-type Platform = 'ios' | 'android' | 'maccatalyst';
 
 interface MauiProject {
   uri: vscode.Uri;
@@ -17,13 +25,7 @@ interface MauiProject {
 
 interface Device extends vscode.QuickPickItem {
   id: string;
-  label: string;
-  detail: string;
   platform: Platform;
-}
-
-interface SimctlOutput {
-  devices?: Record<string, Array<{ udid: string; name: string }>>;
 }
 
 const keys = {
@@ -109,9 +111,8 @@ class MauiWorkbench {
     for (const uri of uris) {
       try {
         const content = await fs.readFile(uri.fsPath, 'utf8');
-        if (!/<UseMaui>\s*true\s*<\/UseMaui>/i.test(content)) continue;
-        const frameworks = [...content.matchAll(/<TargetFrameworks?>\s*([^<]+)\s*<\/TargetFrameworks?>/gi)]
-          .flatMap(match => match[1].split(';').map(value => value.trim()));
+        if (!isMauiProject(content)) continue;
+        const frameworks = targetFrameworks(content);
         projects.push({
           uri,
           label: path.basename(uri.fsPath, '.csproj'),
@@ -130,25 +131,14 @@ class MauiWorkbench {
     if (this.platform === 'ios') {
       try {
         const { stdout } = await execFile('xcrun', ['simctl', 'list', 'devices', 'available', '--json']);
-        const parsed = JSON.parse(stdout) as SimctlOutput;
-        for (const [runtime, entries] of Object.entries(parsed.devices || {})) {
-          if (!runtime.includes('iOS')) continue;
-          for (const entry of entries) {
-            devices.push({ id: entry.udid, label: entry.name, detail: runtime.split('.').pop() ?? runtime, platform: 'ios' });
-          }
-        }
+        devices.push(...parseSimctlDevices(stdout));
       } catch (_) {
         // Xcode is optional until an Apple target is selected.
       }
     } else if (this.platform === 'android') {
       try {
         const { stdout } = await execFile('adb', ['devices', '-l']);
-        for (const line of stdout.split(/\r?\n/).slice(1)) {
-          const match = line.match(/^(\S+)\s+device\b(.*)$/);
-          if (!match) continue;
-          const model = /model:(\S+)/.exec(match[2]);
-          devices.push({ id: match[1], label: model ? model[1].replaceAll('_', ' ') : match[1], detail: match[1], platform: 'android' });
-        }
+        devices.push(...parseAdbDevices(stdout));
       } catch (_) {
         // Android tools are optional until an Android target is selected.
       }
@@ -218,21 +208,25 @@ class MauiWorkbench {
   }
 
   private framework(project: MauiProject): string | undefined {
-    const marker = this.platform === 'maccatalyst' ? 'maccatalyst' : this.platform;
-    return project.frameworks.find(value => value.toLowerCase().includes(marker));
+    return frameworkForPlatform(project.frameworks, this.platform);
   }
 
   private commandArgs(action: string): string[] {
     const project = this.selectedProject;
     if (!project) throw new Error('No .NET MAUI startup project is selected.');
-    const args = [action, project.uri.fsPath, '-c', this.configuration];
-    const framework = this.framework(project);
-    if (framework) args.push('-f', framework);
-    if (action === 'build' && this.runRequested) args.push('-t:Run');
-    const device = this.device;
-    if (device?.platform === 'ios') args.push(`-p:_DeviceName=:v2:udid=${device.id}`);
-    if (device?.platform === 'android') args.push(`-p:AdbTarget=-s ${device.id}`);
-    return args;
+    return dotnetArguments({
+      action: action as 'build' | 'clean',
+      projectPath: project.uri.fsPath,
+      configuration: this.configuration,
+      framework: this.framework(project),
+      runRequested: this.runRequested,
+      device: this.device ? {
+        id: this.device.id,
+        label: this.device.label,
+        detail: this.device.detail ?? '',
+        platform: this.device.platform
+      } : undefined
+    });
   }
 
   private async execute(label: string, action: string, runRequested = false): Promise<void> {

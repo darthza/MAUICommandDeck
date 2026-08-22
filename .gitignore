@@ -3,6 +3,7 @@ graphify-out/
 .DS_Store
 node_modules/
 out/
+out-test/
 dist/
 coverage/
 *.log

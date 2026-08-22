@@ -5,6 +5,9 @@ graphify-out/**
 *.vsix
 src/**
 tsconfig.json
+tsconfig.test.json
+tests/**
 **/*.map
 node_modules/**
 package-lock.json
+out-test/**
