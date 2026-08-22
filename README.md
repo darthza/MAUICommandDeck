@@ -30,6 +30,8 @@ Run `npm test` to compile and execute the unit tests for project discovery, targ
 
 Workspace selections are remembered independently for every VS Code workspace.
 
+The Command Deck stays hidden when the workspace has no .NET MAUI project. It appears automatically when a MAUI `.csproj` is created or opened.
+
 ## Current limitations
 
 - VS Code does not expose an API for a general-purpose top workbench toolbar. Action buttons therefore use the supported editor-title toolbar; selectors use the status bar.

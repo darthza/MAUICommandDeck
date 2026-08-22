@@ -85,14 +85,21 @@ class MauiWorkbench {
 
   async initialize(): Promise<void> {
     await this.refresh(false);
+    const projectWatcher = vscode.workspace.createFileSystemWatcher('**/*.csproj');
     this.context.subscriptions.push(
       vscode.workspace.onDidChangeWorkspaceFolders(() => this.refresh(false)),
+      projectWatcher,
       vscode.tasks.onDidEndTask(event => {
         if (this.activeTask && event.execution === this.activeTask) {
           this.activeTask = undefined;
           vscode.commands.executeCommand('setContext', 'mauiWorkbench.taskRunning', false);
         }
       })
+    );
+    this.context.subscriptions.push(
+      projectWatcher.onDidCreate(() => this.refresh(false)),
+      projectWatcher.onDidDelete(() => this.refresh(false)),
+      projectWatcher.onDidChange(() => this.refresh(false))
     );
   }
 
@@ -157,6 +164,10 @@ class MauiWorkbench {
     this.deviceItem.text = `$(server-environment) ${this.device ? this.device.label : 'Default device'}`;
     this.runItem.text = '$(play) Run';
     await vscode.commands.executeCommand('setContext', 'mauiWorkbench.hasProject', Boolean(project));
+    for (const item of [this.projectItem, this.platformItem, this.deviceItem, this.configItem, this.runItem]) {
+      if (project) item.show();
+      else item.hide();
+    }
   }
 
   private platformLabel(value: Platform): string {

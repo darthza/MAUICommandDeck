@@ -37,6 +37,18 @@
       { "command": "mauiWorkbench.refresh", "title": "MAUI: Refresh Projects and Devices", "icon": "$(refresh)" }
     ],
     "menus": {
+      "commandPalette": [
+        { "command": "mauiWorkbench.selectProject", "when": "mauiWorkbench.hasProject" },
+        { "command": "mauiWorkbench.selectPlatform", "when": "mauiWorkbench.hasProject" },
+        { "command": "mauiWorkbench.selectDevice", "when": "mauiWorkbench.hasProject" },
+        { "command": "mauiWorkbench.selectConfiguration", "when": "mauiWorkbench.hasProject" },
+        { "command": "mauiWorkbench.build", "when": "mauiWorkbench.hasProject" },
+        { "command": "mauiWorkbench.run", "when": "mauiWorkbench.hasProject" },
+        { "command": "mauiWorkbench.debug", "when": "mauiWorkbench.hasProject" },
+        { "command": "mauiWorkbench.stop", "when": "mauiWorkbench.hasProject" },
+        { "command": "mauiWorkbench.clean", "when": "mauiWorkbench.hasProject" },
+        { "command": "mauiWorkbench.refresh", "when": "mauiWorkbench.hasProject" }
+      ],
       "editor/title": [
         { "command": "mauiWorkbench.build", "group": "navigation@80", "when": "mauiWorkbench.hasProject && config.mauiWorkbench.showEditorActions" },
         { "command": "mauiWorkbench.run", "group": "navigation@81", "when": "mauiWorkbench.hasProject && config.mauiWorkbench.showEditorActions" },
