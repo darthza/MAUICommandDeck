@@ -2,6 +2,10 @@
 
 MAUI Command Deck adds persistent, Visual Studio-style controls to VS Code while staying entirely inside the supported extension API.
 
+![MAUI Command Deck toolbar](media/command-deck-toolbar.png)
+
+The toolbar keeps the selected project, platform, device, configuration, and run controls visible while you work.
+
 ## Controls
 
 The left side of the status bar contains:
