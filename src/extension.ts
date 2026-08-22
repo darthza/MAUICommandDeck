@@ -60,7 +60,6 @@ class MauiWorkbench {
     const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, priority);
     item.text = text;
     item.command = command;
-    item.show();
     this.context.subscriptions.push(item);
     return item;
   }
@@ -105,7 +104,11 @@ class MauiWorkbench {
 
   async refresh(showMessage = true): Promise<void> {
     this.projects = await this.findProjects();
-    await this.findDevices();
+    if (this.projects.length > 0) {
+      await this.findDevices();
+    } else {
+      this.devices = [];
+    }
     await this.updateUi();
     if (showMessage) {
       vscode.window.showInformationMessage(`MAUI Command Deck found ${this.projects.length} project(s) and ${this.devices.length} device(s).`);
