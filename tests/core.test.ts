@@ -20,6 +20,19 @@ test('extracts single and multi-target frameworks', () => {
   assert.deepEqual(targetFrameworks(project), ['net10.0-android', 'net10.0-ios', 'net10.0-maccatalyst']);
 });
 
+test('extracts frameworks from conditional MAUI properties', () => {
+  const project = `
+    <TargetFrameworks>net10.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>`;
+  assert.deepEqual(targetFrameworks(project), [
+    'net10.0-android',
+    'net10.0-ios',
+    'net10.0-maccatalyst',
+    'net10.0-windows10.0.19041.0'
+  ]);
+});
+
 test('selects the framework matching each MAUI platform', () => {
   const frameworks = ['net10.0-android', 'net10.0-ios', 'net10.0-maccatalyst'];
   assert.equal(frameworkForPlatform(frameworks, 'android'), 'net10.0-android');
@@ -47,13 +60,13 @@ test('parses connected Android devices and ignores offline entries', () => {
   }]);
 });
 
-test('builds a run command for a selected iOS simulator', () => {
+test('builds an iOS command without bypassing the MAUI launch provider', () => {
   assert.deepEqual(dotnetArguments({
     action: 'build', projectPath: '/tmp/App.csproj', configuration: 'Debug',
-    framework: 'net10.0-ios', runRequested: true,
+    framework: 'net10.0-ios',
     device: { id: 'ios-1', label: 'iPhone Test', detail: 'iOS-18-0', platform: 'ios' }
   }), [
-    'build', '/tmp/App.csproj', '-c', 'Debug', '-f', 'net10.0-ios', '-t:Run',
+    'build', '/tmp/App.csproj', '-c', 'Debug', '-f', 'net10.0-ios',
     '-p:_DeviceName=:v2:udid=ios-1'
   ]);
 });

@@ -14,6 +14,8 @@ The left side of the status bar contains:
 
 Build, Run, Debug, and Stop actions also appear at the top-right of editor groups. All actions are available through the Command Palette under **MAUI**.
 
+Run and Debug delegate deployment and launch to Microsoft's .NET MAUI extension. Run starts without a debugger; Debug enables the debugger and Hot Reload.
+
 ## Requirements
 
 - VS Code 1.95 or newer

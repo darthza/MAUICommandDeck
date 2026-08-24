@@ -12,7 +12,6 @@ export interface RunArguments {
   projectPath: string;
   configuration: string;
   framework?: string;
-  runRequested?: boolean;
   device?: DeviceTarget;
 }
 
@@ -21,8 +20,10 @@ export function isMauiProject(projectFile: string): boolean {
 }
 
 export function targetFrameworks(projectFile: string): string[] {
-  return [...projectFile.matchAll(/<TargetFrameworks?>\s*([^<]+)\s*<\/TargetFrameworks?>/gi)]
-    .flatMap(match => match[1].split(';').map(value => value.trim()).filter(Boolean));
+  const frameworks = [...projectFile.matchAll(/<TargetFrameworks?\b[^>]*>\s*([^<]+)\s*<\/TargetFrameworks?>/gi)]
+    .flatMap(match => match[1].split(';').map(value => value.trim()))
+    .filter(value => value && !value.includes('$('));
+  return [...new Set(frameworks)];
 }
 
 export function frameworkForPlatform(frameworks: string[], platform: Platform): string | undefined {
@@ -68,7 +69,6 @@ export function parseAdbDevices(output: string): DeviceTarget[] {
 export function dotnetArguments(options: RunArguments): string[] {
   const args = [options.action, options.projectPath, '-c', options.configuration];
   if (options.framework) args.push('-f', options.framework);
-  if (options.action === 'build' && options.runRequested) args.push('-t:Run');
   if (options.device?.platform === 'ios') {
     args.push(`-p:_DeviceName=:v2:udid=${options.device.id}`);
   }

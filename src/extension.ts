@@ -40,7 +40,6 @@ class MauiWorkbench {
   private projects: MauiProject[] = [];
   private devices: Device[] = [];
   private activeTask: vscode.TaskExecution | undefined;
-  private runRequested = false;
   private readonly projectItem: vscode.StatusBarItem;
   private readonly platformItem: vscode.StatusBarItem;
   private readonly deviceItem: vscode.StatusBarItem;
@@ -233,7 +232,6 @@ class MauiWorkbench {
       projectPath: project.uri.fsPath,
       configuration: this.configuration,
       framework: this.framework(project),
-      runRequested: this.runRequested,
       device: this.device ? {
         id: this.device.id,
         label: this.device.label,
@@ -243,9 +241,8 @@ class MauiWorkbench {
     });
   }
 
-  private async execute(label: string, action: string, runRequested = false): Promise<void> {
+  private async execute(label: string, action: string): Promise<void> {
     try {
-      this.runRequested = runRequested;
       const dotnet = vscode.workspace.getConfiguration('mauiWorkbench').get<string>('dotnetPath', 'dotnet');
       const project = this.selectedProject;
       if (!project) throw new Error('No .NET MAUI startup project is selected.');
@@ -264,16 +261,16 @@ class MauiWorkbench {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       vscode.window.showErrorMessage(`MAUI Command Deck: ${message}`);
-    } finally {
-      this.runRequested = false;
     }
   }
 
   build(): Promise<void> { return this.execute('Build', 'build'); }
-  run(): Promise<void> { return this.execute('Run', 'build', true); }
+  run(): Promise<void> { return this.launch(true); }
   clean(): Promise<void> { return this.execute('Clean', 'clean'); }
 
-  async debug(): Promise<void> {
+  debug(): Promise<void> { return this.launch(false); }
+
+  private async launch(noDebug: boolean): Promise<void> {
     const project = this.selectedProject;
     if (!project) {
       await vscode.window.showWarningMessage('Select a MAUI startup project first.');
@@ -284,13 +281,19 @@ class MauiWorkbench {
       type: 'maui',
       request: 'launch',
       name: `MAUI: ${project.label}`,
-      projectPath: project.uri.fsPath,
+      project: project.uri.fsPath,
       targetFramework: framework,
-      configuration: this.configuration
+      configuration: this.configuration,
+      device: this.device?.id
     };
-    const started = await vscode.debug.startDebugging(vscode.workspace.getWorkspaceFolder(project.uri), configuration);
+    const started = await vscode.debug.startDebugging(
+      vscode.workspace.getWorkspaceFolder(project.uri),
+      configuration,
+      { noDebug }
+    );
     if (!started) {
-      vscode.window.showErrorMessage('The MAUI debugger could not start. Ensure the official .NET MAUI extension is installed and select its startup device once.');
+      const action = noDebug ? 'run' : 'debugger';
+      vscode.window.showErrorMessage(`The MAUI ${action} could not start. Ensure the official .NET MAUI extension is installed and select its startup device once.`);
     }
   }
 
